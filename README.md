@@ -10,7 +10,7 @@ This library includes ARCore renderer to create AR apps using Processing.
 <b>NOTE:</b> Rename the cloned directory as `ar` and the name of the module to be `processing-ar`. <br />
 * Make sure to import `processing-ar` as a module in your IDE. <br />
 * Build it using the `ant` command through terminal and on Successful build, you'll see `ar.jar` file appear under `libraries/ar/library`. <br />
-* Once built hit Run. You'll see `AR` appear under `Sketch -> Import Library... -> AR`. <br />
+* Once built, hit Run. You'll see `AR` appear under `Sketch -> Import Library... -> AR`. <br />
 * On clicking it, you'll get an import to the <b>AR Library</b> as `import processing.ar.*;`. <br />
 
 ## Working:
