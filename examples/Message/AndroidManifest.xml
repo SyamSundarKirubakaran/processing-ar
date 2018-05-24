@@ -12,6 +12,5 @@
         </activity>
         <meta-data android:name="com.google.ar.core" android:value="required"/>
     </application>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
 </manifest>

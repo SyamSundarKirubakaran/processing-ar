@@ -33,7 +33,10 @@
                srcdir="src" destdir="bin"
                encoding="UTF-8"
                includeAntRuntime="false"
-               classpath="library/gar-common.jar;
+               classpath="../../core/library/support-annotations-25.3.1.jar;
+                          ../../core/library/support-compat-25.3.1.jar;
+                          ../../core/library/support-fragment-25.3.1.jar;
+                          library/gar-common.jar;
                           ../../processing-core.zip;
     	                  ${sdk.dir}/platforms/${android.platform}/android.jar"
                nowarn="true"
