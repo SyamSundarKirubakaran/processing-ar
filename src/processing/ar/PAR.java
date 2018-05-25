@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.opengl.GLSurfaceView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import com.google.ar.core.ArCoreApk;
@@ -16,10 +15,7 @@ import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 import processing.core.PApplet;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-public class PAR implements GLSurfaceView.Renderer {
+public class PAR {
 
     //checking if the import statement works as expected.
 
@@ -50,36 +46,31 @@ public class PAR implements GLSurfaceView.Renderer {
                         message(T_ALERT_MESSAGE, C_NOT_SUPPORTED);
                         return;
                     case INSTALLED:
+//                        ARCore is already installed
 //                        message(T_PROMPT_MESSAGE,C_SUPPORTED);
                         break;
                 }
                 session = new Session(/* context= */ sketch.getContext());
             } catch (UnavailableArcoreNotInstalledException
                     | UnavailableUserDeclinedInstallationException e) {
-//                message = C_EXCEPT_INSTALL;
-//                exception = e.toString();
+                message = C_EXCEPT_INSTALL;
+                exception = e.toString();
             } catch (UnavailableApkTooOldException e) {
-//                message = C_EXCEPT_UPDATE_SDK;
-//                exception = e.toString();
+                message = C_EXCEPT_UPDATE_SDK;
+                exception = e.toString();
             } catch (UnavailableSdkTooOldException e) {
-//                message = C_EXCEPT_UPDATE_APP;
-//                exception = e.toString();
+                message = C_EXCEPT_UPDATE_APP;
+                exception = e.toString();
             } catch (Exception e) {
-//                message = C_DEVICE;
-//                exception = e.toString();
             }
 
-//            if(message != null){
-//                message(T_ALERT_MESSAGE,message+"--"+exception);
-//            }
+            if(message != null){
+                message(T_ALERT_MESSAGE,message+" -- "+exception);
+            }
 
 
             if (!hasCameraPermission(sketch.getActivity())) {
                 requestCameraPermission(sketch.getActivity());
-//                if (!shouldShowRequestPermissionRationale(sketch.getActivity())) {
-//                     Permission denied with checking "Do not ask again".
-//                    launchPermissionSettings(sketch.getActivity());
-//                }
             }
 
         }
@@ -106,43 +97,16 @@ public class PAR implements GLSurfaceView.Renderer {
 
     }
 
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-
-    }
-
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
-
-    }
 
     public static boolean hasCameraPermission(Activity activity) {
         return ContextCompat.checkSelfPermission(activity, CAMERA_PERMISSION)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
-    /** Check to see we have the necessary permissions for this app, and ask for them if we don't. */
     public static void requestCameraPermission(Activity activity) {
         ActivityCompat.requestPermissions(
                 activity, new String[] {CAMERA_PERMISSION}, CAMERA_PERMISSION_CODE);
     }
 
-//    /** Check to see if we need to show the rationale for this permission. */
-//    public static boolean shouldShowRequestPermissionRationale(Activity activity) {
-//        return ActivityCompat.shouldShowRequestPermissionRationale(activity, CAMERA_PERMISSION);
-//    }
-//
-//    /** Launch Application Setting to grant permission. */
-//    public static void launchPermissionSettings(Activity activity) {
-//        Intent intent = new Intent();
-//        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-//        intent.setData(Uri.fromParts("package", activity.getPackageName(), null));
-//        activity.startActivity(intent);
-//    }
 
 }
