@@ -5,9 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Session;
@@ -107,15 +104,15 @@ public class PAR implements AppComponent {
     }
 
 
-    public static boolean hasCameraPermission(Activity activity) {
-        return ContextCompat.checkSelfPermission(activity, CAMERA_PERMISSION)
-                == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public static void requestCameraPermission(Activity activity) {
-        ActivityCompat.requestPermissions(
-                activity, new String[] {CAMERA_PERMISSION}, CAMERA_PERMISSION_CODE);
-    }
+//    public static boolean hasCameraPermission(Activity activity) {
+//        return ContextCompat.checkSelfPermission(activity, CAMERA_PERMISSION)
+//                == PackageManager.PERMISSION_GRANTED;
+//    }
+//
+//    public static void requestCameraPermission(Activity activity) {
+//        ActivityCompat.requestPermissions(
+//                activity, new String[] {CAMERA_PERMISSION}, CAMERA_PERMISSION_CODE);
+//    }
 
     public static Activity getActivity(){
         return sketch.getActivity();
