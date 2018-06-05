@@ -44,5 +44,11 @@
             <compilerclasspath path="../../../processing/java/mode/org.eclipse.jdt.core.jar;
                                ../../../processing/java/mode/jdtCompilerAdapter.jar" />
         </javac>
+
+        <copy todir="bin">
+            <fileset dir="src">
+                <include name="asserts/shaders/*.glsl" />
+            </fileset>
+        </copy>
     </target>
 </project>
