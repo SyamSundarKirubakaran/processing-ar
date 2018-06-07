@@ -6,10 +6,7 @@ import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
 import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import com.google.ar.core.Session;
 import processing.android.AppComponent;
 import processing.ar.render.Background;
@@ -27,7 +24,7 @@ import java.io.InputStream;
 public class PSurfaceAR extends PSurfaceGLES {
 
     private SurfaceViewGLES gl;
-    private GLSurfaceView surfaceV;
+    private GLSurfaceView surfaceView;
     protected AndroidARRenderer renderer;
 
     private Session session;
@@ -42,25 +39,31 @@ public class PSurfaceAR extends PSurfaceGLES {
         this.graphics = graphics;
         this.component = appComponent;
         this.pgl = (PGLES)((PGraphicsOpenGL)graphics).pgl;
+        surfaceView = new SurfaceViewAR(activity);
+        PGraphics.showWarning("Reached - 2");
     }
 
     @Override
     public Context getContext() {
-        return sketch.getContext();
+        PGraphics.showWarning("Reached - 5");
+        return activity;
     }
 
     @Override
     public void finish() {
+        PGraphics.showWarning("Reached - 6");
         sketch.getActivity().finish();
     }
 
     @Override
     public AssetManager getAssets() {
+        PGraphics.showWarning("Reached - 7");
         return sketch.getContext().getAssets();
     }
 
     @Override
     public void startActivity(Intent intent) {
+        PGraphics.showWarning("Reached - 8");
         sketch.getContext().startActivity(intent);
     }
 
@@ -68,47 +71,61 @@ public class PSurfaceAR extends PSurfaceGLES {
     public void initView(int sketchWidth, int sketchHeight) {
         Window window = sketch.getActivity().getWindow();
 
-        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
 
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        window.getDecorView()
+                .setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         window.setContentView(surfaceView);
+        PGraphics.showWarning("Reached - 9");
     }
 
     @Override
     public String getName() {
+        PGraphics.showWarning("Reached - 10");
         return sketch.getActivity().getComponentName().getPackageName();
     }
 
     @Override
     public void setOrientation(int which) {
+        PGraphics.showWarning("Reached - 11");
     }
 
     @Override
     public File getFilesDir() {
+        PGraphics.showWarning("Reached - 12");
         return sketch.getActivity().getFilesDir();
     }
 
     @Override
     public InputStream openFileInput(String filename) {
+        PGraphics.showWarning("Reached - 13");
         return null;
     }
 
     @Override
     public File getFileStreamPath(String path) {
+        PGraphics.showWarning("Reached - 14");
         return sketch.getActivity().getFileStreamPath(path);
     }
 
     @Override
     public void dispose() {
+        PGraphics.showWarning("Reached - 15");
     }
 
 
-    public class SurfaceViewAR extends SurfaceViewGLES {
+    public class SurfaceViewAR extends GLSurfaceView {
         public SurfaceViewAR(Context context) {
-            super(context,surfaceView.getHolder());
+            super(context);
+
+            PGraphics.showWarning("Reached - 4");
 
             final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
@@ -122,7 +139,11 @@ public class PSurfaceAR extends PSurfaceGLES {
             setFocusableInTouchMode(true);
             requestFocus();
 
+            setPreserveEGLContextOnPause(true);
+            setEGLContextClientVersion(2);
+            setEGLConfigChooser(8, 8, 8, 8, 16, 0);
             setRenderer(getARRenderer());
+            setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         }
 
 
@@ -154,12 +175,12 @@ public class PSurfaceAR extends PSurfaceGLES {
 
     protected class AndroidARRenderer implements GLSurfaceView.Renderer {
         public AndroidARRenderer() {
-
+            PGraphics.showWarning("Reached - 3");
         }
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-
+            PGraphics.showWarning("Reached - 16");
         }
 
         @Override
