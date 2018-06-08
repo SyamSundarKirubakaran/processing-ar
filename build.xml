@@ -47,7 +47,7 @@
 
         <copy todir="bin">
             <fileset dir="src">
-                <include name="asserts/shaders/*.glsl" />
+                <include name="assets/shaders/*.glsl" />
             </fileset>
         </copy>
     </target>

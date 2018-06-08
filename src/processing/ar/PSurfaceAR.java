@@ -1,13 +1,25 @@
 package processing.ar;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ConfigurationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.*;
+import com.google.ar.core.ArCoreApk;
+import com.google.ar.core.Config;
+import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
+import com.google.ar.core.exceptions.*;
 import processing.android.AppComponent;
 import processing.ar.render.Background;
 import processing.ar.render.RotationHandler;
@@ -32,6 +44,17 @@ public class PSurfaceAR extends PSurfaceGLES {
 
     private final Background backgroundRenderer = new Background();
 
+    private static String T_ALERT_MESSAGE = "ALERT";
+    private static String C_NOT_SUPPORTED = "ARCore SDK required to run this app type";
+    private static String T_PROMPT_MESSAGE = "PROMPT";
+    private static String C_SUPPORTED = "ARCore SDK is installed";
+    private static String C_EXCEPT_INSTALL = "Please install ARCore";
+    private static String C_EXCEPT_UPDATE_SDK = "Please update ARCore";
+    private static String C_EXCEPT_UPDATE_APP = "Please update this app";
+    private static String C_DEVICE = "This device does not support AR";
+    private static final int CAMERA_PERMISSION_CODE = 0;
+    private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
+
 
     public PSurfaceAR(PGraphics graphics, AppComponent appComponent, SurfaceHolder surfaceHolder) {
         super(graphics,appComponent,surfaceHolder);
@@ -39,6 +62,7 @@ public class PSurfaceAR extends PSurfaceGLES {
         this.graphics = graphics;
         this.component = appComponent;
         this.pgl = (PGLES)((PGraphicsOpenGL)graphics).pgl;
+        displayRotationHelper = new RotationHandler(activity);
         surfaceView = new SurfaceViewAR(activity);
         PGraphics.showWarning("Reached - 2");
     }
@@ -181,18 +205,136 @@ public class PSurfaceAR extends PSurfaceGLES {
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             PGraphics.showWarning("Reached - 16");
+            GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            backgroundRenderer.createOnGlThread(activity);
         }
 
         @Override
         public void onSurfaceChanged(GL10 gl, int width, int height) {
-
+            PGraphics.showWarning("Reached - 20");
+            displayRotationHelper.onSurfaceChanged(width, height);
+            GLES20.glViewport(0, 0, width, height);
         }
 
         @Override
         public void onDrawFrame(GL10 gl) {
+            PGraphics.showWarning("Reached - 21");
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+            if (session == null) {
+                return;
+            }
+            displayRotationHelper.updateSessionIfNeeded(session);
+
+            try {
+                session.setCameraTextureName(backgroundRenderer.getTextureId());
+                Frame frame = session.update();
+                backgroundRenderer.draw(frame);
+            } catch (Throwable t) {
+                PGraphics.showWarning("Exception on the OpenGL thread");
+            }
         }
     }
 
+    @Override
+    public void startThread() {
+        PGraphics.showWarning("Reached - 17");
+    }
+
+    @Override
+    public void pauseThread() {
+        PGraphics.showWarning("Reached - 18");
+        if (session != null) {
+            displayRotationHelper.onPause();
+            surfaceView.onPause();
+            session.pause();
+        }
+    }
+
+    @Override
+    public void resumeThread() {
+        PGraphics.showWarning("Reached - 19");
+        if (session == null) {
+            String message = null;
+            String exception = null;
+            try {
+                switch (ArCoreApk.getInstance().requestInstall(sketch.getActivity(), true)) {
+                    case INSTALL_REQUESTED:
+                        message(T_ALERT_MESSAGE, C_NOT_SUPPORTED);
+                        return;
+                    case INSTALLED:
+//                        ARCore is already installed
+//                        message(T_PROMPT_MESSAGE,C_SUPPORTED);
+                        break;
+                }
+
+                if (!hasCameraPermission(sketch.getActivity())) {
+                    requestCameraPermission(sketch.getActivity());
+                    return;
+                }
+
+                session = new Session(activity);
+            } catch (UnavailableArcoreNotInstalledException
+                    | UnavailableUserDeclinedInstallationException e) {
+                message = C_EXCEPT_INSTALL;
+                exception = e.toString();
+            } catch (UnavailableApkTooOldException e) {
+                message = C_EXCEPT_UPDATE_SDK;
+                exception = e.toString();
+            } catch (UnavailableSdkTooOldException e) {
+                message = C_EXCEPT_UPDATE_APP;
+                exception = e.toString();
+            } catch (Exception e) {
+            }
+
+            if(message != null){
+                message(T_ALERT_MESSAGE,message+" -- "+exception);
+            }
+
+            Config config = new Config(session);
+            if (!session.isSupported(config)) {
+                message(T_PROMPT_MESSAGE,C_DEVICE);
+            }
+            session.configure(config);
+
+        }
+        try {
+            session.resume();
+        } catch (CameraNotAvailableException e) {
+        }
+        surfaceView.onResume();
+        displayRotationHelper.onResume();
+    }
+
+    public void message(String _title, String _message) {
+        final Activity parent = activity;
+        final String message = _message;
+        final String title = _title;
+
+        parent.runOnUiThread(new Runnable() {
+            public void run() {
+                new AlertDialog.Builder(parent)
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                    }
+                                }).show();
+            }
+        });
+
+    }
+
+    public static boolean hasCameraPermission(Activity activity) {
+        return ContextCompat.checkSelfPermission(activity, CAMERA_PERMISSION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void requestCameraPermission(Activity activity) {
+        ActivityCompat.requestPermissions(
+                activity, new String[] {CAMERA_PERMISSION}, CAMERA_PERMISSION_CODE);
+    }
 
 }
