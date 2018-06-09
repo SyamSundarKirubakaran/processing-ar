@@ -6,7 +6,6 @@ import android.util.Log;
 import processing.core.PApplet;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 
 public class Utils {
@@ -45,33 +44,17 @@ public class Utils {
     }
 
     private static String readRawTextFile(URL url) {
-        InputStream inputStream = null;
         try {
             String[] sample = PApplet.loadStrings(url.openStream());
             StringBuilder stringBuilder = new StringBuilder();
             for (String sam:
                  sample) {
                 stringBuilder.append(sam).append("\n");
-//                PGraphics.showWarning(sam+"|||");
             }
-//            PGraphics.showWarning(sample.length+"+++");
             return stringBuilder.toString();
-//            PGraphics.showWarning(stringBuilder.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        try {
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-//            StringBuilder sb = new StringBuilder();
-//            String line;
-//            while ((line = reader.readLine()) != null) {
-//                sb.append(line).append("\n");
-//            }
-//            reader.close();
-//            return sb.toString();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         return null;
     }
 }

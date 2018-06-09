@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,7 +36,6 @@ import java.io.InputStream;
 
 public class PSurfaceAR extends PSurfaceGLES {
 
-    private SurfaceViewGLES gl;
     private GLSurfaceView surfaceView;
     protected AndroidARRenderer renderer;
 
@@ -65,6 +65,9 @@ public class PSurfaceAR extends PSurfaceGLES {
         displayRotationHelper = new RotationHandler(activity);
         surfaceView = new SurfaceViewAR(activity);
         PGraphics.showWarning("Reached - 2");
+        ProgressDialog progressdialog = new ProgressDialog(activity);
+        progressdialog.setMessage("Searching for Surfaces");
+        progressdialog.show();
     }
 
     @Override
@@ -263,8 +266,6 @@ public class PSurfaceAR extends PSurfaceGLES {
                         message(T_ALERT_MESSAGE, C_NOT_SUPPORTED);
                         return;
                     case INSTALLED:
-//                        ARCore is already installed
-//                        message(T_PROMPT_MESSAGE,C_SUPPORTED);
                         break;
                 }
 
