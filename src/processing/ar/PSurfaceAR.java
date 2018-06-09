@@ -22,7 +22,7 @@ import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.exceptions.*;
 import processing.android.AppComponent;
-import processing.ar.render.Background;
+import processing.ar.render.PBackground;
 import processing.ar.render.RotationHandler;
 import processing.core.PGraphics;
 import processing.opengl.PGLES;
@@ -42,7 +42,7 @@ public class PSurfaceAR extends PSurfaceGLES {
     private Session session;
     private RotationHandler displayRotationHelper;
 
-    private final Background backgroundRenderer = new Background();
+    private final PBackground backgroundRenderer = new PBackground();
 
     private static String T_ALERT_MESSAGE = "ALERT";
     private static String C_NOT_SUPPORTED = "ARCore SDK required to run this app type";

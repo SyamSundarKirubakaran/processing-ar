@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-public class Background {
+public class PBackground {
 
     private static final int COORDS_PER_VERTEX = 3;
     private static final int TEXCOORDS_PER_VERTEX = 2;
@@ -27,9 +27,9 @@ public class Background {
     private int textureId = -1;
 
     static private URL screenquad_vertex =
-            Background.class.getResource("/assets/shaders/screenquad_vertex.glsl");
+            PBackground.class.getResource("/assets/shaders/screenquad_vertex.glsl");
     static private URL screenquad_fragment =
-            Background.class.getResource("/assets/shaders/screenquad_fragment.glsl");
+            PBackground.class.getResource("/assets/shaders/screenquad_fragment.glsl");
 
     private String VERTICES_ERROR = "Unexpected number of vertices in BackgroundRenderer";
     private String ERROR_TAG = "Shader Error";
@@ -37,7 +37,7 @@ public class Background {
     private String PARAMETERS_ERROR = "Program parameters";
     private String DRAW_ERROR = "Draw";
 
-    public Background() {}
+    public PBackground() {}
 
     public int getTextureId() {
         return textureId;
