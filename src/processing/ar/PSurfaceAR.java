@@ -16,13 +16,11 @@ import android.opengl.GLSurfaceView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.*;
-import com.google.ar.core.ArCoreApk;
-import com.google.ar.core.Config;
-import com.google.ar.core.Frame;
-import com.google.ar.core.Session;
+import com.google.ar.core.*;
 import com.google.ar.core.exceptions.*;
 import processing.android.AppComponent;
 import processing.ar.render.PBackground;
+import processing.ar.render.PPlane;
 import processing.ar.render.RotationHandler;
 import processing.core.PGraphics;
 import processing.opengl.PGLES;
@@ -32,6 +30,7 @@ import processing.opengl.PSurfaceGLES;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class PSurfaceAR extends PSurfaceGLES {
@@ -43,6 +42,7 @@ public class PSurfaceAR extends PSurfaceGLES {
     private RotationHandler displayRotationHelper;
 
     private final PBackground backgroundRenderer = new PBackground();
+    private final PPlane planeRenderer = new PPlane();
 
     private static String T_ALERT_MESSAGE = "ALERT";
     private static String C_NOT_SUPPORTED = "ARCore SDK required to run this app type";
@@ -55,6 +55,8 @@ public class PSurfaceAR extends PSurfaceGLES {
     private static final int CAMERA_PERMISSION_CODE = 0;
     private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
 
+    ProgressDialog progressdialog = new ProgressDialog(activity);
+
 
     public PSurfaceAR(PGraphics graphics, AppComponent appComponent, SurfaceHolder surfaceHolder) {
         super(graphics,appComponent,surfaceHolder);
@@ -65,7 +67,6 @@ public class PSurfaceAR extends PSurfaceGLES {
         displayRotationHelper = new RotationHandler(activity);
         surfaceView = new SurfaceViewAR(activity);
         PGraphics.showWarning("Reached - 2");
-        ProgressDialog progressdialog = new ProgressDialog(activity);
         progressdialog.setMessage("Searching for Surfaces");
         progressdialog.show();
     }
@@ -210,6 +211,13 @@ public class PSurfaceAR extends PSurfaceGLES {
             PGraphics.showWarning("Reached - 16");
             GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             backgroundRenderer.createOnGlThread(activity);
+            try {
+                planeRenderer.createOnGlThread(activity, "grid.png");
+                PGraphics.showWarning("Reached - 22");
+            } catch (IOException e) {
+                PGraphics.showWarning("Failed to read plane texture");
+                PGraphics.showWarning("Reached - 23");
+            }
         }
 
         @Override
@@ -232,9 +240,27 @@ public class PSurfaceAR extends PSurfaceGLES {
             try {
                 session.setCameraTextureName(backgroundRenderer.getTextureId());
                 Frame frame = session.update();
+                Camera camera = frame.getCamera();
                 backgroundRenderer.draw(frame);
+                float[] projmtx = new float[16];
+                camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
+
+                if (progressdialog != null) {
+                    for (Plane plane : session.getAllTrackables(Plane.class)) {
+                        if (plane.getType() == com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING
+                                && plane.getTrackingState() == TrackingState.TRACKING) {
+                            progressdialog.dismiss();
+                            break;
+                        }
+                    }
+                }
+
+                planeRenderer.drawPlanes(
+                        session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
+                PGraphics.showWarning("Reached - 24");
             } catch (Throwable t) {
                 PGraphics.showWarning("Exception on the OpenGL thread");
+                PGraphics.showWarning("Reached - 25");
             }
         }
     }
