@@ -2,7 +2,7 @@ precision highp float;
 uniform sampler2D u_Texture;
 uniform vec4 u_dotColor;
 uniform vec4 u_lineColor;
-uniform vec4 u_gridControl;  
+uniform vec4 u_gridControl;
 varying vec3 v_TexCoordAlpha;
 
 void main() {
