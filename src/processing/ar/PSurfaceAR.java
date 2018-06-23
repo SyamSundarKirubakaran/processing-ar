@@ -21,6 +21,7 @@ import com.google.ar.core.exceptions.*;
 import processing.android.AppComponent;
 import processing.ar.render.PBackground;
 import processing.ar.render.PPlane;
+import processing.ar.render.PPointCloud;
 import processing.ar.render.RotationHandler;
 import processing.core.PGraphics;
 import processing.opengl.PGLES;
@@ -43,6 +44,7 @@ public class PSurfaceAR extends PSurfaceGLES {
 
     private final PBackground backgroundRenderer = new PBackground();
     private final PPlane planeRenderer = new PPlane();
+    private final PPointCloud pointCloud = new PPointCloud();
 
     private static String T_ALERT_MESSAGE = "ALERT";
     private static String C_NOT_SUPPORTED = "ARCore SDK required to run this app type";
@@ -218,6 +220,7 @@ public class PSurfaceAR extends PSurfaceGLES {
                 PGraphics.showWarning("Failed to read plane texture");
                 PGraphics.showWarning("Reached - 23");
             }
+            pointCloud.createOnGlThread(activity);
         }
 
         @Override
@@ -242,8 +245,17 @@ public class PSurfaceAR extends PSurfaceGLES {
                 Frame frame = session.update();
                 Camera camera = frame.getCamera();
                 backgroundRenderer.draw(frame);
+                if (camera.getTrackingState() == TrackingState.PAUSED) {
+                    return;
+                }
                 float[] projmtx = new float[16];
                 camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
+                float[] viewmtx = new float[16];
+                camera.getViewMatrix(viewmtx, 0);
+                PointCloud foundPointCloud = frame.acquirePointCloud();
+                pointCloud.update(foundPointCloud);
+                pointCloud.draw(viewmtx, projmtx);
+                foundPointCloud.release();
 
                 if (progressdialog != null) {
                     for (Plane plane : session.getAllTrackables(Plane.class)) {

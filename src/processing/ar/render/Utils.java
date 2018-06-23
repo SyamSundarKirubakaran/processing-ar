@@ -2,8 +2,8 @@ package processing.ar.render;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.util.Log;
 import processing.core.PApplet;
+import processing.core.PGraphics;
 
 import java.io.IOException;
 import java.net.URL;
@@ -19,7 +19,7 @@ public class Utils {
         GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
 
         if (compileStatus[0] == 0) {
-            Log.e(tag, "Error compiling shader: " + GLES20.glGetShaderInfoLog(shader));
+            PGraphics.showWarning("Error compiling shader: " + GLES20.glGetShaderInfoLog(shader));
             GLES20.glDeleteShader(shader);
             shader = 0;
         }
@@ -35,7 +35,7 @@ public class Utils {
         int lastError = GLES20.GL_NO_ERROR;
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e(tag, label + ": glError " + error);
+            PGraphics.showWarning(label + ": glError " + error);
             lastError = error;
         }
         if (lastError != GLES20.GL_NO_ERROR) {

@@ -32,7 +32,7 @@ public class PBackground {
             PBackground.class.getResource("/assets/shaders/screenquad_fragment.glsl");
 
     private String VERTICES_ERROR = "Unexpected number of vertices in BackgroundRenderer";
-    private String ERROR_TAG = "Shader Error";
+    private String ERROR_TAG = "Error";
     private String CREATION_ERROR = "Program creation";
     private String PARAMETERS_ERROR = "Program parameters";
     private String DRAW_ERROR = "Draw";
