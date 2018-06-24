@@ -10,9 +10,9 @@ import java.net.URL;
 public class PPointCloud {
 
     static private URL pointcloud_vertex =
-            PBackground.class.getResource("/assets/shaders/pointcloud_vertex.glsl");
+            PPointCloud.class.getResource("/assets/shaders/pointcloud_vertex.glsl");
     static private URL pointcloud_fragment =
-            PBackground.class.getResource("/assets/shaders/pointcloud_fragment.glsl");
+            PPointCloud.class.getResource("/assets/shaders/pointcloud_fragment.glsl");
 
     private String ERROR_TAG = "Error";
     private String BEF_CREATE = "before create";

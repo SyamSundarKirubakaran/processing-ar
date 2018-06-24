@@ -22,9 +22,9 @@ import java.util.*;
 public class PPlane {
 
     static private URL plane_vertex =
-            PBackground.class.getResource("/assets/shaders/plane_vertex.glsl");
+            PPlane.class.getResource("/assets/shaders/plane_vertex.glsl");
     static private URL plane_fragment =
-            PBackground.class.getResource("/assets/shaders/plane_fragment.glsl");
+            PPlane.class.getResource("/assets/shaders/plane_fragment.glsl");
 
     private String ERROR_TAG = "Error";
     private String CREATION_ERROR = "Program creation";
