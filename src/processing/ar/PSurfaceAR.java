@@ -228,6 +228,13 @@ public class PSurfaceAR extends PSurfaceGLES {
             PGraphics.showWarning("Reached - 20");
             displayRotationHelper.onSurfaceChanged(width, height);
             GLES20.glViewport(0, 0, width, height);
+
+            sketch.surfaceChanged();
+            graphics.surfaceChanged();
+
+            sketch.setSize(width, height);
+            graphics.setSize(sketch.sketchWidth(), sketch.sketchHeight());
+
         }
 
         @Override
@@ -274,6 +281,7 @@ public class PSurfaceAR extends PSurfaceGLES {
                 PGraphics.showWarning("Exception on the OpenGL thread");
                 PGraphics.showWarning("Reached - 25");
             }
+//            sketch.handleDraw();
         }
     }
 
