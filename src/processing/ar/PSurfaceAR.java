@@ -38,6 +38,7 @@ public class PSurfaceAR extends PSurfaceGLES {
 
     private GLSurfaceView surfaceView;
     protected AndroidARRenderer renderer;
+    private PGraphicsAR par;
 
     private Session session;
     private RotationHandler displayRotationHelper;
@@ -66,6 +67,9 @@ public class PSurfaceAR extends PSurfaceGLES {
         this.graphics = graphics;
         this.component = appComponent;
         this.pgl = (PGLES)((PGraphicsOpenGL)graphics).pgl;
+
+        par = (PGraphicsAR)graphics;
+
         displayRotationHelper = new RotationHandler(activity);
         surfaceView = new SurfaceViewAR(activity);
         PGraphics.showWarning("Reached - 2");
