@@ -1,9 +1,14 @@
 import processing.ar.*;
-void setup()
-{
-  fullScreen(AR);
-  orientation(PORTRAIT);
+import processing.ar.render.*;
+PShape cube;
+public void setup() {
+    fullScreen(AR);
+    cube = createShape(BOX, 400);
 }
-void draw()
-{
+public void draw() {
+    lights();
+    translate(width/2,height/2);
+    rotateX(200);
+    rotateY(200);
+    shape(cube);
 }

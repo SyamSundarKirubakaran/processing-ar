@@ -38,12 +38,15 @@ public class PSurfaceAR extends PSurfaceGLES {
 
     private GLSurfaceView surfaceView;
     protected AndroidARRenderer renderer;
-    private PGraphicsAR par;
+    protected PGraphicsAR par;
 
-    private Session session;
-    private RotationHandler displayRotationHelper;
+    public static float[] projmtx;
+    public static float[] viewmtx;
 
-    private final PBackground backgroundRenderer = new PBackground();
+    public static Session session;
+    public static RotationHandler displayRotationHelper;
+
+    public static PBackground backgroundRenderer = new PBackground();
     private final PPlane planeRenderer = new PPlane();
     private final PPointCloud pointCloud = new PPointCloud();
 
@@ -214,6 +217,7 @@ public class PSurfaceAR extends PSurfaceGLES {
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+            pgl.getGL(null);
             PGraphics.showWarning("Reached - 16");
             GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             backgroundRenderer.createOnGlThread(activity);
@@ -238,7 +242,6 @@ public class PSurfaceAR extends PSurfaceGLES {
 
             sketch.setSize(width, height);
             graphics.setSize(sketch.sketchWidth(), sketch.sketchHeight());
-
         }
 
         @Override
@@ -259,10 +262,13 @@ public class PSurfaceAR extends PSurfaceGLES {
                 if (camera.getTrackingState() == TrackingState.PAUSED) {
                     return;
                 }
-                float[] projmtx = new float[16];
+                projmtx = new float[16];
                 camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
-                float[] viewmtx = new float[16];
+                viewmtx = new float[16];
                 camera.getViewMatrix(viewmtx, 0);
+//                for(int i=0;i<16;i++){
+//                    PGraphics.showWarning(i+") Proj value: "+projmtx[i]+"\n"+i+") View mat: "+viewmtx[i]+"\n");
+//                }
                 PointCloud foundPointCloud = frame.acquirePointCloud();
                 pointCloud.update(foundPointCloud);
                 pointCloud.draw(viewmtx, projmtx);
@@ -285,7 +291,8 @@ public class PSurfaceAR extends PSurfaceGLES {
                 PGraphics.showWarning("Exception on the OpenGL thread");
                 PGraphics.showWarning("Reached - 25");
             }
-//            sketch.handleDraw();
+            sketch.calculate();
+            sketch.handleDraw();
         }
     }
 
