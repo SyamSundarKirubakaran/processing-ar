@@ -13,6 +13,7 @@ dependencies {
     compile name: 'android'
     compile name: 'core'
     compile name: 'gar-common'
+    compile name: 'obj-0.3.0'
 }
 
 sourceSets {
