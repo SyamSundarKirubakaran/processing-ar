@@ -47,8 +47,8 @@ public class PSurfaceAR extends PSurfaceGLES {
     public static RotationHandler displayRotationHelper;
 
     public static PBackground backgroundRenderer = new PBackground();
-    private final PPlane planeRenderer = new PPlane();
-    private final PPointCloud pointCloud = new PPointCloud();
+    public static PPlane planeRenderer = new PPlane();
+    public static PPointCloud pointCloud = new PPointCloud();
 
     private static String T_ALERT_MESSAGE = "ALERT";
     private static String C_NOT_SUPPORTED = "ARCore SDK required to run this app type";

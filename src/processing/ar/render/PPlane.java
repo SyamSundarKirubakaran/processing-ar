@@ -312,7 +312,7 @@ public class PPlane {
                 planeIndexMap.put(plane, planeIndex);
             }
 
-            setPlaneColor(0xFFFFFFFF);
+//            setPlaneColor(0xFFFFFFFF);
 
             colorRgbaToFloat(planeColor, colorValue);
             PGraphics.showWarning("Value assigned Max effort");

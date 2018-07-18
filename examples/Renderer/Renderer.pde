@@ -3,9 +3,11 @@ import processing.ar.render.*;
 PShape cube;
 public void setup() {
     fullScreen(AR);
-    cube = createShape(BOX, 200);
+    orientation(PORTRAIT);
+    cube = createShape(BOX, 400);
 }
 public void draw() {
+    PPlane.setPlaneColor(0x00BCD4FF);
     lights();
     background(0);
     shape(cube);

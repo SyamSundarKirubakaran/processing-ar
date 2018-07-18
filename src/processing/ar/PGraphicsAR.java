@@ -1,6 +1,6 @@
 package processing.ar;
 
-import com.google.ar.core.Frame;
+import com.google.ar.core.*;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import processing.opengl.PGL;
 import processing.opengl.PGLES;
@@ -29,17 +29,25 @@ public class PGraphicsAR extends PGraphics3D {
 
     @Override
     protected void backgroundImpl() {
-//        super.backgroundImpl();
         if (session != null) {
             displayRotationHelper.updateSessionIfNeeded(session);
-            PGraphicsAR.showWarning("Graphics: inside IF background()");
-            session.setCameraTextureName(backgroundRenderer.getTextureId());
             try {
+                session.setCameraTextureName(backgroundRenderer.getTextureId());
                 Frame frame = session.update();
+                Camera camera = frame.getCamera();
                 backgroundRenderer.draw(frame);
+                camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
+                camera.getViewMatrix(viewmtx, 0);
+                PointCloud foundPointCloud = frame.acquirePointCloud();
+                pointCloud.update(foundPointCloud);
+                pointCloud.draw(viewmtx, projmtx);
+                foundPointCloud.release();
+                planeRenderer.drawPlanes(
+                        session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
             } catch (CameraNotAvailableException e) {
                 PGraphicsAR.showWarning("Graphics: Exception inside IF");
             }
+            PGraphicsAR.showWarning("Graphics: inside IF background()");
         }
         PGraphicsAR.showWarning("Graphics: background()");
     }
