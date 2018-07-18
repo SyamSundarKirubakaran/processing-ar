@@ -36,5 +36,14 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="ANDROID_LIB" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/library/obj-0.3.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
