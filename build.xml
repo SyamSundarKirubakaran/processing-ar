@@ -48,8 +48,7 @@
 
         <copy todir="bin">
             <fileset dir="src">
-                <include name="assets/shaders/*.glsl" />
-                <include name="assets/grid.png" />
+                <include name="assets/*" />
             </fileset>
         </copy>
     </target>

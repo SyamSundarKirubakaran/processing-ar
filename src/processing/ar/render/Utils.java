@@ -47,8 +47,7 @@ public class Utils {
         try {
             String[] sample = PApplet.loadStrings(url.openStream());
             StringBuilder stringBuilder = new StringBuilder();
-            for (String sam:
-                 sample) {
+            for (String sam: sample) {
                 stringBuilder.append(sam).append("\n");
             }
             return stringBuilder.toString();

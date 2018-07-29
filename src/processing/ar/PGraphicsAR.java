@@ -1,13 +1,11 @@
 package processing.ar;
 
-import com.google.ar.core.*;
-import com.google.ar.core.exceptions.CameraNotAvailableException;
 import processing.opengl.PGL;
 import processing.opengl.PGLES;
 import processing.opengl.PGraphics3D;
 import processing.opengl.PGraphicsOpenGL;
 
-import static processing.ar.PSurfaceAR.*;
+import static processing.ar.PSurfaceAR.session;
 
 public class PGraphicsAR extends PGraphics3D {
 
@@ -30,24 +28,7 @@ public class PGraphicsAR extends PGraphics3D {
     @Override
     protected void backgroundImpl() {
         if (session != null) {
-            displayRotationHelper.updateSessionIfNeeded(session);
-            try {
-                session.setCameraTextureName(backgroundRenderer.getTextureId());
-                Frame frame = session.update();
-                Camera camera = frame.getCamera();
-                backgroundRenderer.draw(frame);
-                camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
-                camera.getViewMatrix(viewmtx, 0);
-                PointCloud foundPointCloud = frame.acquirePointCloud();
-                pointCloud.update(foundPointCloud);
-                pointCloud.draw(viewmtx, projmtx);
-                foundPointCloud.release();
-                planeRenderer.drawPlanes(
-                        session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
-            } catch (CameraNotAvailableException e) {
-                PGraphicsAR.showWarning("Graphics: Exception inside IF");
-            }
-            PGraphicsAR.showWarning("Graphics: inside IF background()");
+            PSurfaceAR.performRendering();
         }
         PGraphicsAR.showWarning("Graphics: background()");
     }
@@ -57,36 +38,26 @@ public class PGraphicsAR extends PGraphics3D {
         PGraphicsAR.showWarning("Graphics: surfaceChanged()");
     }
 
-    public void updateProjection(){
-        //yet to implement
-        PGraphicsAR.showWarning("Graphics: updateProjection()");
-    }
-
-    public void updateView(){
-        //yet to implement
-        PGraphicsAR.showWarning("Graphics: updateView()");
-    }
-
     public void updateInferences(){
-        updateProjection();
-        updateView();
-        setARCamera();
+        setAR();
     }
 
-    protected void setARCamera() {
+    protected void setAR() {
 
-        modelview.set(PSurfaceAR.viewmtx[0], PSurfaceAR.viewmtx[4], PSurfaceAR.viewmtx[8],  PSurfaceAR.viewmtx[12],
-                PSurfaceAR.viewmtx[1], PSurfaceAR.viewmtx[5], PSurfaceAR.viewmtx[9],  PSurfaceAR.viewmtx[13],
-                PSurfaceAR.viewmtx[2], PSurfaceAR.viewmtx[6], PSurfaceAR.viewmtx[10], PSurfaceAR.viewmtx[14],
-                PSurfaceAR.viewmtx[3], PSurfaceAR.viewmtx[7], PSurfaceAR.viewmtx[11], PSurfaceAR.viewmtx[15]);
+        if(PSurfaceAR.viewmtx != null) {
+            modelview.set(PSurfaceAR.viewmtx[0], PSurfaceAR.viewmtx[4], PSurfaceAR.viewmtx[8], PSurfaceAR.viewmtx[12],
+                    PSurfaceAR.viewmtx[1], PSurfaceAR.viewmtx[5], PSurfaceAR.viewmtx[9], PSurfaceAR.viewmtx[13],
+                    PSurfaceAR.viewmtx[2], PSurfaceAR.viewmtx[6], PSurfaceAR.viewmtx[10], PSurfaceAR.viewmtx[14],
+                    PSurfaceAR.viewmtx[3], PSurfaceAR.viewmtx[7], PSurfaceAR.viewmtx[11], PSurfaceAR.viewmtx[15]);
 
-        float tx = -defCameraX;
-        float ty = -defCameraY;
-        float tz = -defCameraZ;
-        modelview.translate(tx,ty,tz);
+            float tx = -defCameraX;
+            float ty = -defCameraY;
+            float tz = -defCameraZ;
+            modelview.translate(tx, ty, tz);
 
-        camera.set(modelview);
+            camera.set(modelview);
+            updateProjmodelview();
+        }
         PGraphicsAR.showWarning("Graphics: ARCamera()");
     }
-
 }

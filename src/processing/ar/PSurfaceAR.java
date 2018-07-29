@@ -19,10 +19,7 @@ import android.view.*;
 import com.google.ar.core.*;
 import com.google.ar.core.exceptions.*;
 import processing.android.AppComponent;
-import processing.ar.render.PBackground;
-import processing.ar.render.PPlane;
-import processing.ar.render.PPointCloud;
-import processing.ar.render.RotationHandler;
+import processing.ar.render.*;
 import processing.core.PGraphics;
 import processing.opengl.PGLES;
 import processing.opengl.PGraphicsOpenGL;
@@ -33,6 +30,8 @@ import javax.microedition.khronos.opengles.GL10;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class PSurfaceAR extends PSurfaceGLES {
 
@@ -40,15 +39,28 @@ public class PSurfaceAR extends PSurfaceGLES {
     protected AndroidARRenderer renderer;
     protected PGraphicsAR par;
 
+    public static float[] anchorMatrix = new float[16];
+    public static float[] quaternionMatrix = new float[16];
+    public static ArrayBlockingQueue<MotionEvent> queuedTaps = new ArrayBlockingQueue<>(16);
+    public static ArrayList<Anchor> anchors = new ArrayList<>();
+
     public static float[] projmtx;
     public static float[] viewmtx;
+
+    public static float lightIntensity;
 
     public static Session session;
     public static RotationHandler displayRotationHelper;
 
+    public static String PLANE_TEXTURE = "grid.png";
+    public static String OBJ_NAME = null;
+    public static String OBJ_TEX = null;
+    public static boolean PLACED = false;
+
     public static PBackground backgroundRenderer = new PBackground();
     public static PPlane planeRenderer = new PPlane();
     public static PPointCloud pointCloud = new PPointCloud();
+    public static PObject virtualObject = new PObject();
 
     private static String T_ALERT_MESSAGE = "ALERT";
     private static String C_NOT_SUPPORTED = "ARCore SDK required to run this app type";
@@ -108,7 +120,6 @@ public class PSurfaceAR extends PSurfaceGLES {
     public void initView(int sketchWidth, int sketchHeight) {
         Window window = sketch.getActivity().getWindow();
 
-
         window.getDecorView()
                 .setSystemUiVisibility(
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -161,7 +172,8 @@ public class PSurfaceAR extends PSurfaceGLES {
     public class SurfaceViewAR extends GLSurfaceView {
         public SurfaceViewAR(Context context) {
             super(context);
-
+            sketch.setup();
+            sketch.draw();
             PGraphics.showWarning("Reached - 4");
 
             final ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -186,6 +198,8 @@ public class PSurfaceAR extends PSurfaceGLES {
 
         @Override
         public boolean onTouchEvent(MotionEvent event) {
+            queuedTaps.offer(event);
+            PGraphics.showWarning("Reached - onTouchEvent()");
             return sketch.surfaceTouchEvent(event);
         }
 
@@ -209,7 +223,6 @@ public class PSurfaceAR extends PSurfaceGLES {
         return renderer;
     }
 
-
     protected class AndroidARRenderer implements GLSurfaceView.Renderer {
         public AndroidARRenderer() {
             PGraphics.showWarning("Reached - 3");
@@ -221,9 +234,17 @@ public class PSurfaceAR extends PSurfaceGLES {
             PGraphics.showWarning("Reached - 16");
             GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             backgroundRenderer.createOnGlThread(activity);
+            if(OBJ_NAME != null && OBJ_TEX != null) {
+                try {
+                    virtualObject.createOnGlThread(activity, OBJ_NAME, OBJ_TEX);
+                    virtualObject.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
+                } catch (IOException e) {
+                    PGraphics.showWarning("Failed to read obj file");
+                }
+            }
             try {
-                planeRenderer.createOnGlThread(activity, "grid.png");
-                PGraphics.showWarning("Reached - 22");
+                planeRenderer.createOnGlThread(activity, PLANE_TEXTURE);
+                PGraphics.showWarning("Reached - 22"+" ===== "+PLANE_TEXTURE);
             } catch (IOException e) {
                 PGraphics.showWarning("Failed to read plane texture");
                 PGraphics.showWarning("Reached - 23");
@@ -252,47 +273,86 @@ public class PSurfaceAR extends PSurfaceGLES {
             if (session == null) {
                 return;
             }
-            displayRotationHelper.updateSessionIfNeeded(session);
-
-            try {
-                session.setCameraTextureName(backgroundRenderer.getTextureId());
-                Frame frame = session.update();
-                Camera camera = frame.getCamera();
-                backgroundRenderer.draw(frame);
-                if (camera.getTrackingState() == TrackingState.PAUSED) {
-                    return;
-                }
-                projmtx = new float[16];
-                camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
-                viewmtx = new float[16];
-                camera.getViewMatrix(viewmtx, 0);
-//                for(int i=0;i<16;i++){
-//                    PGraphics.showWarning(i+") Proj value: "+projmtx[i]+"\n"+i+") View mat: "+viewmtx[i]+"\n");
-//                }
-                PointCloud foundPointCloud = frame.acquirePointCloud();
-                pointCloud.update(foundPointCloud);
-                pointCloud.draw(viewmtx, projmtx);
-                foundPointCloud.release();
-
-                if (progressdialog != null) {
-                    for (Plane plane : session.getAllTrackables(Plane.class)) {
-                        if (plane.getType() == com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING
-                                && plane.getTrackingState() == TrackingState.TRACKING) {
-                            progressdialog.dismiss();
-                            break;
-                        }
+            performRendering();
+            if (progressdialog != null) {
+                for (Plane plane : session.getAllTrackables(Plane.class)) {
+                    if (plane.getType() == com.google.ar.core.Plane.Type.HORIZONTAL_UPWARD_FACING
+                            && plane.getTrackingState() == TrackingState.TRACKING) {
+                        progressdialog.dismiss();
+                        break;
                     }
                 }
-
-                planeRenderer.drawPlanes(
-                        session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
-                PGraphics.showWarning("Reached - 24");
-            } catch (Throwable t) {
-                PGraphics.showWarning("Exception on the OpenGL thread");
-                PGraphics.showWarning("Reached - 25");
             }
             sketch.calculate();
             sketch.handleDraw();
+        }
+    }
+
+    public static void performRendering(){
+        displayRotationHelper.updateSessionIfNeeded(session);
+
+        try {
+            session.setCameraTextureName(backgroundRenderer.getTextureId());
+            Frame frame = session.update();
+            Camera camera = frame.getCamera();
+
+            MotionEvent tap = queuedTaps.poll();
+            if (tap != null && camera.getTrackingState() == TrackingState.TRACKING) {
+                for (HitResult hit : frame.hitTest(tap)) {
+                    Trackable trackable = hit.getTrackable();
+                    if ((trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose()))
+                            || (trackable instanceof Point
+                            && ((Point) trackable).getOrientationMode()
+                            == Point.OrientationMode.ESTIMATED_SURFACE_NORMAL)) {
+                        if (anchors.size() >= 20) {
+                            anchors.get(0).detach();
+                            anchors.remove(0);
+                        }
+                        anchors.add(hit.createAnchor());
+                        break;
+                    }
+                }
+            }
+
+            backgroundRenderer.draw(frame);
+            if (camera.getTrackingState() == TrackingState.PAUSED) {
+                return;
+            }
+            projmtx = new float[16];
+            camera.getProjectionMatrix(projmtx, 0, 0.1f, 100.0f);
+            viewmtx = new float[16];
+            camera.getViewMatrix(viewmtx, 0);
+            lightIntensity = frame.getLightEstimate().getPixelIntensity();
+//                for(int i=0;i<16;i++){
+//                    PGraphics.showWarning(i+") Proj value: "+projmtx[i]+"\n"+i+") View mat: "+viewmtx[i]+"\n");
+//                }
+            PointCloud foundPointCloud = frame.acquirePointCloud();
+            pointCloud.update(foundPointCloud);
+            pointCloud.draw(viewmtx, projmtx);
+            foundPointCloud.release();
+
+            planeRenderer.drawPlanes(
+                    session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
+
+            float scaleFactor = 1.0f;
+            for (Anchor anchor : anchors) {
+                if (anchor.getTrackingState() != TrackingState.TRACKING) {
+                    continue;
+                }
+                anchor.getPose().toMatrix(anchorMatrix, 0);
+
+                anchor.getPose().getRotationQuaternion(quaternionMatrix,0);
+
+                if((OBJ_NAME != null && OBJ_TEX != null) && PLACED) {
+                    virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
+                    virtualObject.draw(viewmtx, projmtx, lightIntensity);
+                }
+            }
+
+            PGraphics.showWarning("Reached - 24");
+        } catch (Throwable t) {
+            PGraphics.showWarning("Exception on the OpenGL thread");
+            PGraphics.showWarning("Reached - 25");
         }
     }
 

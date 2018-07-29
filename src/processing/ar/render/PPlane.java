@@ -19,6 +19,8 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.*;
 
+import static processing.ar.PSurfaceAR.PLANE_TEXTURE;
+
 public class PPlane {
 
     static private URL plane_vertex =
@@ -349,6 +351,11 @@ public class PPlane {
     public static void setPlaneColor(int color){
         colorValue = color;
         PGraphics.showWarning("Value assigned");
+    }
+
+    public static void setPlaneTexture(String planeTexture){
+        PLANE_TEXTURE = planeTexture;
+        PGraphics.showWarning("Texture assigned ======= "+PLANE_TEXTURE);
     }
 
 }
