@@ -50,6 +50,7 @@ public class PSurfaceAR extends PSurfaceGLES {
     public static float lightIntensity;
 
     public static Session session;
+    public static Pose mainPose;
     public static RotationHandler displayRotationHelper;
 
     public static String PLANE_TEXTURE = "grid.png";
@@ -334,14 +335,14 @@ public class PSurfaceAR extends PSurfaceGLES {
             planeRenderer.drawPlanes(
                     session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
 
+            mainPose = camera.getDisplayOrientedPose();
+
             float scaleFactor = 1.0f;
             for (Anchor anchor : anchors) {
                 if (anchor.getTrackingState() != TrackingState.TRACKING) {
                     continue;
                 }
                 anchor.getPose().toMatrix(anchorMatrix, 0);
-
-                anchor.getPose().getRotationQuaternion(quaternionMatrix,0);
 
                 if((OBJ_NAME != null && OBJ_TEX != null) && PLACED) {
                     virtualObject.updateModelMatrix(anchorMatrix, scaleFactor);
