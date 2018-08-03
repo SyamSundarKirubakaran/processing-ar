@@ -335,7 +335,6 @@ public class PSurfaceAR extends PSurfaceGLES {
             planeRenderer.drawPlanes(
                     session.getAllTrackables(Plane.class), camera.getDisplayOrientedPose(), projmtx);
 
-            mainPose = camera.getDisplayOrientedPose();
 
             float scaleFactor = 1.0f;
             for (Anchor anchor : anchors) {

@@ -1,19 +1,16 @@
 package processing.ar;
 
-import processing.core.PMatrix3D;
+import android.opengl.Matrix;
 import processing.opengl.PGL;
 import processing.opengl.PGLES;
 import processing.opengl.PGraphics3D;
 import processing.opengl.PGraphicsOpenGL;
 
-import static processing.ar.PSurfaceAR.mainPose;
 import static processing.ar.PSurfaceAR.session;
 
 public class PGraphicsAR extends PGraphics3D {
-
-    PMatrix3D modelViewMatrix;
-    PMatrix3D projectionMatrix;
-    PMatrix3D projModelMatrix;
+    
+    float[] resultant = new float[16];
 
     public PGraphicsAR() {
     }
@@ -49,26 +46,22 @@ public class PGraphicsAR extends PGraphics3D {
     }
 
     protected void setAR() {
-        if(PSurfaceAR.viewmtx != null) {
-            modelview.set(PSurfaceAR.viewmtx[0], PSurfaceAR.viewmtx[4], PSurfaceAR.viewmtx[8], PSurfaceAR.viewmtx[12],
-                    PSurfaceAR.viewmtx[1], PSurfaceAR.viewmtx[5], PSurfaceAR.viewmtx[9], PSurfaceAR.viewmtx[13],
-                    PSurfaceAR.viewmtx[2], PSurfaceAR.viewmtx[6], PSurfaceAR.viewmtx[10], PSurfaceAR.viewmtx[14],
-                    PSurfaceAR.viewmtx[3], PSurfaceAR.viewmtx[7], PSurfaceAR.viewmtx[11], PSurfaceAR.viewmtx[15]);
-
-            modelViewMatrix = modelview.get();
-            projModelMatrix = projmodelview.get();
-            projectionMatrix = projection.get();
-
-            float tx = -defCameraX + mainPose.tx();
-            float ty = -defCameraY + mainPose.ty();
-            float tz = -defCameraZ + mainPose.tz();
+        resetMatrix();
+        if(PSurfaceAR.viewmtx != null && PSurfaceAR.anchorMatrix != null) {
+            Matrix.multiplyMM(resultant, 0, PSurfaceAR.viewmtx, 0, PSurfaceAR.anchorMatrix, 0);
+            modelview.set(resultant[0], resultant[4], resultant[8], resultant[12],
+                    resultant[1], resultant[5], resultant[9], resultant[13],
+                    resultant[2], resultant[6], resultant[10], resultant[14],
+                    resultant[3], resultant[7], resultant[11], resultant[15]);
+            float tx = -defCameraX;
+            float ty = -defCameraY;
+            float tz = -defCameraZ;
             modelview.translate(tx, ty, tz);
-
-            camera.set(modelViewMatrix);
+//            applyProjection(PSurfaceAR.projmtx[0], PSurfaceAR.projmtx[4], PSurfaceAR.projmtx[8], PSurfaceAR.projmtx[12],
+//                    PSurfaceAR.projmtx[1], PSurfaceAR.projmtx[5], PSurfaceAR.projmtx[9], PSurfaceAR.projmtx[13],
+//                    PSurfaceAR.projmtx[2], PSurfaceAR.projmtx[6], PSurfaceAR.projmtx[10], PSurfaceAR.projmtx[14],
+//                    PSurfaceAR.projmtx[3], PSurfaceAR.projmtx[7], PSurfaceAR.projmtx[11], PSurfaceAR.projmtx[15]);
             updateProjmodelview();
         }
-//        PGraphicsAR.showWarning("Graphics: ARCamera()");
-//        PGraphicsAR.showWarning("MV === "+modelViewMatrix+"\nPMM === "+projModelMatrix+"\nPM === "+projectionMatrix+"\n");
-//        PGraphicsAR.showWarning("+++ "+PSurfaceAR.viewmtx);
     }
 }

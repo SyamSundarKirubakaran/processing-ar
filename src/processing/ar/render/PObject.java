@@ -65,8 +65,8 @@ public class PObject {
     private int materialParametersUniform;
     
     private final float[] modelMatrix = new float[16];
-    public static final float[] modelViewMatrix = new float[16];
-    public static final float[] modelViewProjectionMatrix = new float[16];
+    public static float[] modelViewMatrix = new float[16];
+    public static float[] modelViewProjectionMatrix = new float[16];
     
     private float ambient = 0.3f;
     private float diffuse = 1.0f;
