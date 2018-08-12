@@ -1,6 +1,5 @@
 package processing.ar;
 
-import android.opengl.Matrix;
 import processing.opengl.PGL;
 import processing.opengl.PGLES;
 import processing.opengl.PGraphics3D;
@@ -9,15 +8,12 @@ import processing.opengl.PGraphicsOpenGL;
 import static processing.ar.PSurfaceAR.session;
 
 public class PGraphicsAR extends PGraphics3D {
-    
-    float[] resultant = new float[16];
 
     public PGraphicsAR() {
     }
 
     @Override
     protected PGL createPGL(PGraphicsOpenGL pGraphicsOpenGL) {
-        PGraphicsAR.showWarning("Graphics: Creation");
         return new PGLES(pGraphicsOpenGL);
     }
 
@@ -25,7 +21,6 @@ public class PGraphicsAR extends PGraphics3D {
     public void beginDraw() {
         super.beginDraw();
         updateInferences();
-        PGraphicsAR.showWarning("Graphics: BeginDraw()");
     }
 
     @Override
@@ -33,12 +28,10 @@ public class PGraphicsAR extends PGraphics3D {
         if (session != null) {
             PSurfaceAR.performRendering();
         }
-        PGraphicsAR.showWarning("Graphics: background()");
     }
 
     @Override
     public void surfaceChanged() {
-        PGraphicsAR.showWarning("Graphics: surfaceChanged()");
     }
 
     public void updateInferences(){
@@ -46,22 +39,34 @@ public class PGraphicsAR extends PGraphics3D {
     }
 
     protected void setAR() {
-        resetMatrix();
-        if(PSurfaceAR.viewmtx != null && PSurfaceAR.anchorMatrix != null) {
-            Matrix.multiplyMM(resultant, 0, PSurfaceAR.viewmtx, 0, PSurfaceAR.anchorMatrix, 0);
-            modelview.set(resultant[0], resultant[4], resultant[8], resultant[12],
-                    resultant[1], resultant[5], resultant[9], resultant[13],
-                    resultant[2], resultant[6], resultant[10], resultant[14],
-                    resultant[3], resultant[7], resultant[11], resultant[15]);
-            float tx = -defCameraX;
-            float ty = -defCameraY;
-            float tz = -defCameraZ;
-            modelview.translate(tx, ty, tz);
-//            applyProjection(PSurfaceAR.projmtx[0], PSurfaceAR.projmtx[4], PSurfaceAR.projmtx[8], PSurfaceAR.projmtx[12],
-//                    PSurfaceAR.projmtx[1], PSurfaceAR.projmtx[5], PSurfaceAR.projmtx[9], PSurfaceAR.projmtx[13],
-//                    PSurfaceAR.projmtx[2], PSurfaceAR.projmtx[6], PSurfaceAR.projmtx[10], PSurfaceAR.projmtx[14],
-//                    PSurfaceAR.projmtx[3], PSurfaceAR.projmtx[7], PSurfaceAR.projmtx[11], PSurfaceAR.projmtx[15]);
-            updateProjmodelview();
+        if (PSurfaceAR.projmtx != null && PSurfaceAR.viewmtx != null && PSurfaceAR.anchorMatrix != null) {
+
+            float[] prj = PSurfaceAR.projmtx;
+            float[] view = PSurfaceAR.viewmtx;
+            float[] anchor = PSurfaceAR.anchorMatrix;
+
+            // Fist, set all matrices to identity
+            resetProjection();
+            resetMatrix();
+
+            // Apply the projection matrix
+            applyProjection(prj[0], prj[4], prj[8], prj[12],
+                    prj[1], prj[5], prj[9], prj[13],
+                    prj[2], prj[6], prj[10], prj[14],
+                    prj[3], prj[7], prj[11], prj[15]);
+
+            // make modelview = view
+            applyMatrix(view[0], view[4], view[8], view[12],
+                    view[1], view[5], view[9], view[13],
+                    view[2], view[6], view[10], view[14],
+                    view[3], view[7], view[11], view[15]);
+
+            // now, modelview = view * anchor
+            applyMatrix(anchor[0], anchor[4], anchor[8], anchor[12],
+                    anchor[1], anchor[5], anchor[9], anchor[13],
+                    anchor[2], anchor[6], anchor[10], anchor[14],
+                    anchor[3], anchor[7], anchor[11], anchor[15]);
+
         }
     }
 }

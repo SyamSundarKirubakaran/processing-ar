@@ -1,6 +1,5 @@
 package processing.ar.render;
 
-import android.content.Context;
 import android.opengl.GLES20;
 import processing.core.PApplet;
 import processing.core.PGraphics;
@@ -9,7 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 
 public class Utils {
-    public static int loadGLShader(String tag, Context context, int type, URL resUrl) {
+    public static int loadGLShader(int type, URL resUrl) {
         String code = readRawTextFile(resUrl);
         int shader = GLES20.glCreateShader(type);
         GLES20.glShaderSource(shader, code);
@@ -43,7 +42,7 @@ public class Utils {
         }
     }
 
-    private static String readRawTextFile(URL url) {
+    public static String readRawTextFile(URL url) {
         try {
             String[] sample = PApplet.loadStrings(url.openStream());
             StringBuilder stringBuilder = new StringBuilder();

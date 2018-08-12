@@ -78,10 +78,9 @@ public class PBackground {
         quadTexCoordTransformed = bbTexCoordsTransformed.asFloatBuffer();
 
         int vertexShader =
-                Utils.loadGLShader(ERROR_TAG, context, GLES20.GL_VERTEX_SHADER, screenquad_vertex);
+                Utils.loadGLShader(GLES20.GL_VERTEX_SHADER, screenquad_vertex);
         int fragmentShader =
-                Utils.loadGLShader(
-                        ERROR_TAG, context, GLES20.GL_FRAGMENT_SHADER, screenquad_fragment);
+                Utils.loadGLShader(GLES20.GL_FRAGMENT_SHADER, screenquad_fragment);
 
         quadProgram = GLES20.glCreateProgram();
         GLES20.glAttachShader(quadProgram, vertexShader);

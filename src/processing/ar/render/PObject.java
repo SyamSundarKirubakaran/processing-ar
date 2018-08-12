@@ -10,23 +10,20 @@ import de.javagl.obj.Obj;
 import de.javagl.obj.ObjData;
 import de.javagl.obj.ObjReader;
 import de.javagl.obj.ObjUtils;
-import processing.core.PGraphics;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.*;
 
-import static processing.ar.PSurfaceAR.OBJ_NAME;
-import static processing.ar.PSurfaceAR.OBJ_TEX;
-import static processing.ar.PSurfaceAR.PLACED;
+import static processing.ar.PSurfaceAR.*;
 
 public class PObject {
 
-    static private URL object_vertex =
-            PPlane.class.getResource("/assets/shaders/obj_vertex.glsl");
-    static private URL object_fragment =
-            PPlane.class.getResource("/assets/shaders/obj_fragment.glsl");
+    private static URL object_vertex =
+            PObject.class.getResource("/assets/shaders/obj_vertex.glsl");
+    private static URL object_fragment =
+            PObject.class.getResource("/assets/shaders/obj_fragment.glsl");
 
     private String ERROR_TAG = "Error";
     private String TEX_LOAD = "Texture loading";
@@ -36,11 +33,14 @@ public class PObject {
     private String BEFORE_DRAW = "Before draw";
     private String AFTER_DRAW = "After draw";
 
+    public static int vertexShader;
+    public static int fragmentShader;
+
     private static final int COORDS_PER_VERTEX = 3;
-    
+
     private static final float[] LIGHT_DIRECTION = new float[] {0.250f, 0.866f, 0.433f, 0.0f};
     private final float[] viewLightDirection = new float[4];
-    
+
     private int vertexBufferId;
     private int verticesBaseAddress;
     private int texCoordsBaseAddress;
@@ -48,33 +48,33 @@ public class PObject {
     private int indexBufferId;
     private int indexCount;
 
-    private int program;
+    private int program = 0;
     private final int[] textures = new int[1];
-    
+
     private int modelViewUniform;
     private int modelViewProjectionUniform;
-    
+
     private int positionAttribute;
     private int normalAttribute;
     private int texCoordAttribute;
-    
+
     private int textureUniform;
-    
+
     private int lightingParametersUniform;
-    
+
     private int materialParametersUniform;
-    
-    private final float[] modelMatrix = new float[16];
+
+    public static float[] modelMatrix = new float[16];
     public static float[] modelViewMatrix = new float[16];
     public static float[] modelViewProjectionMatrix = new float[16];
-    
+
     private float ambient = 0.3f;
     private float diffuse = 1.0f;
     private float specular = 1.0f;
     private float specularPower = 6.0f;
 
     public PObject() {}
-    
+
     public void createOnGlThread(Context context, String objAssetName, String diffuseTextureAssetName)
             throws IOException {
         Bitmap textureBitmap =
@@ -94,17 +94,17 @@ public class PObject {
         textureBitmap.recycle();
 
         Utils.checkGLError(ERROR_TAG, TEX_LOAD);
-        
+
         InputStream objInputStream = context.getAssets().open(objAssetName);
         Obj obj = ObjReader.read(objInputStream);
-        
+
         obj = ObjUtils.convertToRenderable(obj);
-        
+
         IntBuffer wideIndices = ObjData.getFaceVertexIndices(obj, 3);
         FloatBuffer vertices = ObjData.getVertices(obj);
         FloatBuffer texCoords = ObjData.getTexCoords(obj, 2);
         FloatBuffer normals = ObjData.getNormals(obj);
-        
+
         ShortBuffer indices =
                 ByteBuffer.allocateDirect(2 * wideIndices.limit())
                         .order(ByteOrder.nativeOrder())
@@ -118,7 +118,7 @@ public class PObject {
         GLES20.glGenBuffers(2, buffers, 0);
         vertexBufferId = buffers[0];
         indexBufferId = buffers[1];
-        
+
         verticesBaseAddress = 0;
         texCoordsBaseAddress = verticesBaseAddress + 4 * vertices.limit();
         normalsBaseAddress = texCoordsBaseAddress + 4 * texCoords.limit();
@@ -133,7 +133,7 @@ public class PObject {
         GLES20.glBufferSubData(
                 GLES20.GL_ARRAY_BUFFER, normalsBaseAddress, 4 * normals.limit(), normals);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        
+
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
         indexCount = indices.limit();
         GLES20.glBufferData(
@@ -142,12 +142,13 @@ public class PObject {
 
         Utils.checkGLError(ERROR_TAG, OBJ_BUFF);
 
-        final int vertexShader =
-                Utils.loadGLShader(ERROR_TAG, context, GLES20.GL_VERTEX_SHADER, object_vertex);
-        final int fragmentShader =
-                Utils.loadGLShader(ERROR_TAG, context, GLES20.GL_FRAGMENT_SHADER, object_fragment);
+        vertexShader =
+                Utils.loadGLShader(GLES20.GL_VERTEX_SHADER, object_vertex);
+        fragmentShader =
+                Utils.loadGLShader(GLES20.GL_FRAGMENT_SHADER, object_fragment);
 
         program = GLES20.glCreateProgram();
+
         GLES20.glAttachShader(program, vertexShader);
         GLES20.glAttachShader(program, fragmentShader);
         GLES20.glLinkProgram(program);
@@ -171,7 +172,7 @@ public class PObject {
 
         Matrix.setIdentityM(modelMatrix, 0);
     }
-    
+
     public void updateModelMatrix(float[] modelMatrix, float scaleFactor) {
         float[] scaleMatrix = new float[16];
         Matrix.setIdentityM(scaleMatrix, 0);
@@ -180,7 +181,7 @@ public class PObject {
         scaleMatrix[10] = scaleFactor;
         Matrix.multiplyMM(this.modelMatrix, 0, modelMatrix, 0, scaleMatrix, 0);
     }
-    
+
     public void setMaterialProperties(
             float ambient, float diffuse, float specular, float specularPower) {
         this.ambient = ambient;
@@ -188,16 +189,16 @@ public class PObject {
         this.specular = specular;
         this.specularPower = specularPower;
     }
-    
+
     public void draw(float[] cameraView, float[] cameraPerspective, float lightIntensity) {
 
         Utils.checkGLError(ERROR_TAG, BEFORE_DRAW);
-        
+
         Matrix.multiplyMM(modelViewMatrix, 0, cameraView, 0, modelMatrix, 0);
         Matrix.multiplyMM(modelViewProjectionMatrix, 0, cameraPerspective, 0, modelViewMatrix, 0);
 
         GLES20.glUseProgram(program);
-        
+
         Matrix.multiplyMV(viewLightDirection, 0, modelViewMatrix, 0, LIGHT_DIRECTION, 0);
         normalizeVec3(viewLightDirection);
         GLES20.glUniform4f(
@@ -206,13 +207,13 @@ public class PObject {
                 viewLightDirection[1],
                 viewLightDirection[2],
                 lightIntensity);
-        
+
         GLES20.glUniform4f(materialParametersUniform, ambient, diffuse, specular, specularPower);
-        
+
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
         GLES20.glUniform1i(textureUniform, 0);
-        
+
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vertexBufferId);
 
         GLES20.glVertexAttribPointer(
@@ -222,10 +223,10 @@ public class PObject {
                 texCoordAttribute, 2, GLES20.GL_FLOAT, false, 0, texCoordsBaseAddress);
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
-        
+
         GLES20.glUniformMatrix4fv(modelViewUniform, 1, false, modelViewMatrix, 0);
         GLES20.glUniformMatrix4fv(modelViewProjectionUniform, 1, false, modelViewProjectionMatrix, 0);
-        
+
         GLES20.glEnableVertexAttribArray(positionAttribute);
         GLES20.glEnableVertexAttribArray(normalAttribute);
         GLES20.glEnableVertexAttribArray(texCoordAttribute);
@@ -233,7 +234,7 @@ public class PObject {
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indexBufferId);
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
-        
+
         GLES20.glDisableVertexAttribArray(positionAttribute);
         GLES20.glDisableVertexAttribArray(normalAttribute);
         GLES20.glDisableVertexAttribArray(texCoordAttribute);
@@ -253,12 +254,11 @@ public class PObject {
     public void load(String obj_name,String obj_texture){
         OBJ_NAME = obj_name;
         OBJ_TEX = obj_texture;
-        PGraphics.showWarning("Object LOAD reached ========= "+OBJ_NAME+" ======== "+OBJ_TEX);
     }
 
     public void place(){
         PLACED = true;
-        PGraphics.showWarning("Object place() command received");
     }
 
 }
+

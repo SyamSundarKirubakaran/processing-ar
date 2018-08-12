@@ -60,10 +60,9 @@ public class PPointCloud {
         Utils.checkGLError(ERROR_TAG, BUFF_ALLOC);
 
         int vertexShader =
-                Utils.loadGLShader(ERROR_TAG, context, GLES20.GL_VERTEX_SHADER, pointcloud_vertex);
+                Utils.loadGLShader(GLES20.GL_VERTEX_SHADER, pointcloud_vertex);
         int passthroughShader =
-                Utils.loadGLShader(
-                        ERROR_TAG, context, GLES20.GL_FRAGMENT_SHADER, pointcloud_fragment);
+                Utils.loadGLShader(GLES20.GL_FRAGMENT_SHADER, pointcloud_fragment);
 
         programName = GLES20.glCreateProgram();
         GLES20.glAttachShader(programName, vertexShader);

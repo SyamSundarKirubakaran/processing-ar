@@ -9,7 +9,6 @@ import android.opengl.Matrix;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
-import processing.core.PGraphics;
 
 import java.io.IOException;
 import java.net.URL;
@@ -95,9 +94,9 @@ public class PPlane {
 
     public void createOnGlThread(Context context, String gridDistanceTextureName) throws IOException {
         int vertexShader =
-                Utils.loadGLShader(ERROR_TAG, context, GLES20.GL_VERTEX_SHADER, plane_vertex);
+                Utils.loadGLShader(GLES20.GL_VERTEX_SHADER, plane_vertex);
         int passthroughShader =
-                Utils.loadGLShader(ERROR_TAG, context, GLES20.GL_FRAGMENT_SHADER, plane_fragment);
+                Utils.loadGLShader(GLES20.GL_FRAGMENT_SHADER, plane_fragment);
 
         planeProgram = GLES20.glCreateProgram();
         GLES20.glAttachShader(planeProgram, vertexShader);
@@ -314,10 +313,7 @@ public class PPlane {
                 planeIndexMap.put(plane, planeIndex);
             }
 
-//            setPlaneColor(0xFFFFFFFF);
-
             colorRgbaToFloat(planeColor, colorValue);
-            PGraphics.showWarning("Value assigned Max effort");
             GLES20.glUniform4fv(lineColorUniform, 1, planeColor, 0);
             GLES20.glUniform4fv(dotColorUniform, 1, planeColor, 0);
 
@@ -350,12 +346,10 @@ public class PPlane {
 
     public static void setPlaneColor(int color){
         colorValue = color;
-        PGraphics.showWarning("Value assigned");
     }
 
     public static void setPlaneTexture(String planeTexture){
         PLANE_TEXTURE = planeTexture;
-        PGraphics.showWarning("Texture assigned ======= "+PLANE_TEXTURE);
     }
 
 }
