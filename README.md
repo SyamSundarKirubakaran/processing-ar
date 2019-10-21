@@ -1,7 +1,7 @@
-:tada: This AR Library is now a part of [Processing Android Core](https://github.com/processing/processing-android) :tada:
-:warning: <b>Depricated</b> :warning: - This repo uses ANT built system which is now replaced with Gradle, clone and build the [Android Core](https://github.com/processing/processing-android) which contains this Renderer in-built.
-
 ![Image](imgs/bg_1.png)
+
+:tada: This AR Renderer is now a part of [Processing Android Core](https://github.com/processing/processing-android) :tada: <br>
+:warning: <b>Depricated</b> :warning: - This repo uses ANT built system which is now replaced with Gradle. Clone and build the [Android Core](https://github.com/processing/processing-android) which contains this Renderer.
 
 # AR library for Processing-Android
 
