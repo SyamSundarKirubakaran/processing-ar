@@ -1,12 +1,12 @@
 ![Image](imgs/bg_1.png)
 
-:tada: This AR Renderer is now a part of [Processing Android Core](https://github.com/processing/processing-android) :tada: <br>
-:tada: You can follow [this tutorial](https://android.processing.org/tutorials/ar_intro/index.html) to use this Library. :tada:<br><br>
-
 # AR library for Processing-Android
 
 ![Android](https://img.shields.io/badge/platform-Android-green.svg?longCache=true&style=for-the-badge)   ![ARCore](https://img.shields.io/badge/ARCore-v1.2.0-blue.svg?longCache=true&style=for-the-badge)   ![In Progress](https://img.shields.io/badge/in--progress-true-green.svg?longCache=true&style=for-the-badge) <br />
-This library includes ARCore renderer to create AR apps using Processing.
+This library includes ARCore renderer to create AR apps using Processing.<br>
+
+:tada: This AR Renderer is now a part of [Processing Android Core](https://github.com/processing/processing-android) :tada: <br>
+:tada: You can follow [this tutorial](https://android.processing.org/tutorials/ar_intro/index.html) to use this Library. :tada:<br>
 
 ## Steps to build:
 * Make sure you have both [Processing](https://github.com/processing/processing) and [Processing-Android](https://github.com/processing/processing-android) built before you proceed. <br />
